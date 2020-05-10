@@ -1,0 +1,42 @@
+<form id="permForm" method="post" >
+    <input type="hidden" name="pId" value="{{ perm.pId }}">
+    <table>
+         <tr>
+             <td><label>权限编号：</label></td>
+             <td><input  class="easyui-validatebox" data-options="required:true" type="text" name="pCode" value="{{ perm.pCode}}"></td>
+         </tr>
+         <tr>
+            <td><label>权限名称：</label></td>
+            <td><input class="easyui-validatebox" data-options="required:true" type="text" name="pName" value="{{ perm.pName}}"></td>
+        </tr>
+        <tr>
+            <td><label>父权限号：</label></td>
+            <td><input class="easyui-validatebox" data-options="required:true" type="text" name="parentId" value="{{ perm.parentId}}"></td>
+        </tr>
+
+    </table>
+</form>
+<script>
+
+//保存
+    function savePerm(title) {
+        var url;
+        if(title=='添加权限'){
+            url="../savePerm";
+        }else if(title=='编辑权限'){
+            url="../updatePerm";
+        }
+         $('#permForm').form('submit',{
+            url:url,
+            success:function(data){
+                data=JSON.parse(data);
+                 $.messager.alert('提示',data.msg);
+                if(data.status=='OK'){
+                     $('#permdialog').dialog('close');
+                     getPerm(1,5,null);
+                     //$('#permList').datagrid('reload')
+                }
+            }
+        });
+    }
+</script>

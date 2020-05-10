@@ -1,0 +1,71 @@
+<div style="margin:10px 0;"></div>
+	<div class="easyui-panel"  style="text-align:center;width:100%;max-width:600px;padding:30px 90px;border-width: 0">
+		<form id="userRoleF" method="post">
+            <input type="hidden" name="id" value="{{ user.id }}">
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" name="name" style="width:100%" data-options="label:'名称:'" value="{{ user.name }}">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" name="acct" style="width:100%" data-options="label:'账号:'" value="{{ user.acct }}">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" name="ctime" style="width:100%" data-options="label:'创建时间:'" value="{{ user.ctime }}">
+			</div>
+            <div id='box' style="margin-bottom:20px">
+
+			</div>
+		</form>
+	</div>
+
+
+    <div style="text-align:center;padding:5px 0">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="userRoleSub()" style="width:80px">提交</a>
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="closeForm()" style="width:80px">取消</a>
+    </div>
+<script>
+
+
+    $.ajax({
+        url:'../allRoles',
+        type:'get',
+        data:{accId:'{{ user.acct }}'},
+        dataType:'json',
+        success :function (ret) {
+            var roles=eval(ret.roles);
+            var userRole=eval(ret.userRole);
+            var content='角色选择:';
+            for(var i=0;i<roles.length;i++){
+                var tag=0;
+                for (var j=0;j<userRole.length;j++){
+                    if(roles[i].roleId==userRole[j].roleId){
+                        content=content+'<input type="checkbox" name="roleId" checked value="'+roles[i].roleId+'"/>'+roles[i].roleName;
+                        tag=tag+1;
+                        break;
+                    }
+                }
+                if(tag==0) {
+                    content = content + '<input type="checkbox" name="roleId" value="' + roles[i].roleId + '"/>' + roles[i].roleName;
+                }
+            }
+           $('#box').prepend(content);
+        }
+    });
+    function userRoleSub(){
+        $('#userRoleF').form('submit',{
+            url:'../userRoleSave',
+            success:function(data){
+                data=JSON.parse(data);
+                 $.messager.alert('提示',data.msg);
+                if(data.status=='OK'){
+                      var tab = $('#tt').tabs('getSelected');
+                      tab.panel('refresh');
+                }
+            }
+        });
+    }
+    function closeForm(){
+       var tab= $('#tt').tabs('getSelected');
+       console.log(tab);
+        $('#tt').tabs('close', '角色分配');
+    }
+</script>

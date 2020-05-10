@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RBAC权限管理系统</title>
+    <link rel="stylesheet" type="text/css" href="../static/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="../static/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="../static/themes/demo.css">
+    <link rel="stylesheet" type="text/css" href="../static/themes/color.css">
+    <script type="text/javascript" src="../static/js/jquery.min.js"></script>
+
+    <script type="text/javascript" src="../static/js/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="../static/js/easyui-lang-zh_CN.js"></script>
+
+</head>
+<body style="background:#eee;">
+<div id="cc" class="easyui-layout" style="width:1000px;height:900px;margin: 0 auto;">
+    <div data-options="region:'north'" style="height:100px;background :url(../static/imge/header1.png);"></div>
+    <div data-options="region:'west',title:'菜单栏'" style="height:550px;width:20%;">
+        <div id="sm" class="easyui-sidemenu" data-options="data:data,collapsed:'expand',onSelect:onSelectmenu"></div>
+    </div>
+    <div data-options="region:'center'" style="">
+         <div id="tt" class="easyui-tabs" > </div>
+
+    </div>
+</div>
+</div>
+<script type="text/javascript">
+     $(document).ready(function(){
+           //菜单栏
+           var opts = $('#sm').sidemenu('options');
+			$('#sm').sidemenu(opts.collapsed ? 'expand' : 'collapse');
+			opts = $('#sm').sidemenu('options');
+			$('#sm').sidemenu('resize', {
+				width: opts.collapsed ? 60 : 200
+			})
+         //主页tab
+         openNewTab('主页','mainpage', '../mainPage') ;
+    });
+     //打开心tab
+      function openNewTab(title,tabid,url){
+        param={'text':title,'tabid':tabid,'url':url}
+         onSelectmenu(param, null) ;
+     }
+		var data = [{
+		    id:'usermenu',
+	        text: '用户管理',
+	        iconCls: 'icon-man',
+	        state: 'open',
+	        children: [{
+	            text: '查看用户',
+                url:'../usertab',
+                tabid:'showuser'
+	        }]
+	    },{
+	        text: '角色管理',
+	        iconCls: 'icon-sum',
+	        children: [{
+	            text: '查看角色',
+                url:'../roletab',
+                tabid:'showrole'
+	        }]
+	    },{
+		   text:'权限管理',
+            iconCls: 'icon-lock',
+            children: [{
+	            text: '查看权限',
+                url:'../permtab',
+                tabid:'showpermission'
+	        }]
+     }];
+    function onSelectmenu(memu, index) {
+        var tab=$('#'+memu.tabid);
+        if(tab.length==0) {
+            $('#tt').tabs('add', {
+                id: memu.tabid,
+                title: memu.text,
+                href: memu.url,
+                closable: true,
+                tools: [{
+                    iconCls: 'icon-mini-refresh',
+                    handler: function () {
+                         var tab = $('#tt').tabs('getSelected');
+                         //刷新
+                         tab.panel('refresh');
+                    }
+                }]
+            });
+        }else{
+            $('#tt').tabs('select', memu.text);
+        }
+    }
+
+
+	</script>
+</body>
+</html>

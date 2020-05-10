@@ -1,0 +1,174 @@
+
+<div class="easyui-panel" style="width:100%;max-width:800px;padding:30px 60px;position:relative;">
+    <form id="sform" >
+        <table>
+            <tr>
+                <td>
+            <label for="name">账号:</label>
+            <input  class="easyui-textbox"  type="text" name="acct"  />
+               </td>
+                <td>
+            <label for="email">名称:</label>
+            <input class="easyui-textbox"  type="text" name="name"  />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                 <label for="">角色:</label>
+                <input id="cc" class="easyui-combobox" name="roleId"
+                 data-options="valueField:'roleId',textField:'roleName',url:'../roleList'" />
+                </td>
+                <td>
+            <label for="">权限:</label>
+            <input id="cc" class="easyui-combobox" name="pId"
+                 data-options="valueField:'pId',textField:'pName',url:'../permListcombox'" />
+                </td>
+            </tr>
+        </table>
+         <div style="float: right;position:absolute;right: 15px;bottom: 10px;">
+             <a id="sbtn"  class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+         </div>
+    </form>
+
+</div>
+
+<table id="userList" >
+
+</table>
+<div id="pp" ></div>
+
+<div id="utb" style="">
+    <a onclick="tosaveUser()" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true">添加</a>
+    <a onclick="toeditUser()" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true">编辑</a>
+    <a onclick="deleteUser();" class="easyui-linkbutton" data-options="iconCls:'icon-cut',plain:true">删除</a>
+    <a onclick="setRole();" class="easyui-linkbutton" data-options="iconCls:'icon-man',plain:true">角色分配</a>
+
+</div>
+<div id="udialog"></div>
+<script>
+        PAGESIZE=5;//默认每页显示
+        getuser(1,PAGESIZE,null);
+       function getuser(curPage,pageSize,param) {
+        $.ajax({
+            url: "../getUserList?curPage="+curPage+"&pageSize="+pageSize,
+            type: 'GET',
+            data: param ,
+            dataType: 'json',
+            success: function (ret) {
+                var totalSize = ret.totalSize;
+                var curPage = ret.curPage;
+                var data = eval(ret.data);
+                $('#userList').datagrid({
+                    data: data,
+                    toolbar: '#utb',
+                    rownumbers:true,
+                    width:798,
+                    fitColumns:true,
+                    singleSelect:true,
+                    columns:[[
+                        {field:'id',hidden:true,width:100},
+                        {field:'acct',title:'账号',width:100},
+                        {field:'name',title:'名称'},
+                        {field:'sts',title:'状态',
+                                 formatter: function(value,row,index){
+                                     return (value=='1'?'激活':'未激活');
+                                 }},
+                        {field:'ctime',title:'创建时间',width:100}
+                        ]]
+                });
+                 //分页
+                 $('#pp').pagination({
+                     total:totalSize,
+                     pageSize:PAGESIZE,
+                     pageNumber:curPage,
+                     pageList: [PAGESIZE],
+                     onSelectPage:function(pageNumber, pageSize) {
+                          getuser(pageNumber, pageSize,param);
+                      }
+                 });
+
+            }
+        });
+    }
+    //搜索
+     $('#sbtn').click(function () {
+      getuser(1,PAGESIZE,$('#sform').serialize())
+     })
+
+     //添加tab
+    function tosaveUser() {
+       //openNewTab('添加用户','adduser','../saveUserPage');
+        showDialog('../saveUserPage','添加用户')
+    }
+    //编辑
+    function toeditUser() {
+       var row=$('#userList').datagrid('getSelected');
+        if(row){
+             id=row.id;
+             //openNewTab('编辑用户','edituser','../saveUserPage?id='+id);
+            showDialog('../saveUserPage?id='+id,'编辑用户')
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+
+     //删除
+    function deleteUser(){
+         var row=$('#userList').datagrid('getSelected');
+         if(row){
+             $.messager.confirm('确认','您确认想要删除记录吗？',function(r){
+                if (r){
+                     id=row.id;
+                     $.ajax({
+                         url:'../deleteUserByid',
+                         type:'GET',
+                         data:{'id':id},
+                         dataType:'json',
+                         success: function(ret){
+                             if(ret.status=='OK'){
+                                  $.messager.alert('提醒',ret.msg);
+                                  $('#userList').datagrid('reload')
+                             }else{
+                                 $.messager.alert('提醒','删除失败');
+                             }
+                         }
+                     });
+                     }
+             });
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+    function showDialog(url,title) {
+         $('#udialog').dialog({
+        title: title,
+        width: 400,
+        height: 200,
+        closed: false,
+        cache: false,
+        href: url,//'../toEditCategory?id='+id,
+        modal: true,
+        buttons:[{
+				text:'保存',
+				handler:function(){
+                    saveUser(title);
+                }
+			},{
+				text:'关闭',
+				handler:function(){
+				    $('#udialog').dialog('close');
+                }
+			}]
+    });
+    }
+    //角色分配
+    function setRole() {
+        var row=$('#userList').datagrid('getSelected');
+        if(row){
+             id=row.id;
+             openNewTab('角色分配','setRole1','../toSetRolePage?id='+id);
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+</script>

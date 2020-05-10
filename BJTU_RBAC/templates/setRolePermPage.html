@@ -1,0 +1,103 @@
+
+	<div class="easyui-panel"  style="text-align:center;width:100%;max-width:600px;padding:30px 90px;border-width: 0">
+		<form id="userRoleF" method="post">
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" name="roleId" style="width:100%" data-options="label:'角色编号:'" value="{{ role.roleId }}">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" name="roleName" style="width:100%" data-options="label:'角色名称:'" value="{{ role.roleName }}">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" name="roleDescribe" style="width:100%" data-options="label:'角色描述:'" value="{{ role.roleDescribe }}">
+			</div>
+            <div class="easyui-panel" title="权限选择：" style="width:100%;max-width:600px;padding:10px 60px;">
+            <ul id='ptree'class="easyui-tree" data-options="checkbox:true"></ul>
+            </div>
+
+		</form>
+	</div>
+    <div style="text-align:center;padding:5px 0">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="rolePermSub()" style="width:80px">提交</a>
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="closeForm()" style="width:80px">取消</a>
+    </div>
+<script>
+
+    $.ajax({
+           // async:false,
+            url:'../getPermTree',
+            type:'post',
+            dataType:'json',
+            success:function (data) {
+                 $('#ptree').tree({
+                    data:data,
+                     lines:true
+                });
+                 appendChild(data);
+                 selectChecked();
+            }
+        });
+    function appendChild(data){
+        for(var i=0;i<data.length;i++){
+             var  nodeid=data[i].id
+             $.ajax({
+                async:false,
+                url:'../getPermTree',
+                type:'post',
+                data:{'id':nodeid},
+                dataType:'json',
+                success:function (ret) {
+                    var node = $('#ptree').tree('find', nodeid);
+                    $('#ptree').tree('append', {
+                        parent: node.target,
+                        data: ret
+                    });
+                }
+        });
+        }
+    }
+    function selectChecked(){
+        var roleId=$('input[name="roleId"]').val()
+        $.ajax({
+            async:false,
+            url:'../getRolePerm',
+            data:{'roleId':roleId},
+            type:'get',
+            dataType:'json',
+            success:function (ret) {
+                for(var i=0;i<ret.length;i++){
+                    var node = $('#ptree').tree('find', ret[i]);
+                    $('#ptree').tree('check', node.target);
+                }
+            }
+        });
+
+
+    }
+    function rolePermSub(){
+        var roleId=$('input[name="roleId"]').val()
+        var nodes = $('#ptree').tree('getChecked');
+        var pCodes='';
+        for(var i=0;i<nodes.length;i++){
+            pCodes=pCodes+nodes[i].id+',';
+        }
+        $.ajax({
+            url:'../role_PermSave',
+            data:{'roleId':roleId,'pCodes':pCodes},
+            type:'post',
+            dataType:'json',
+            success:function(data){
+                console.log(data);
+                //data=JSON.parse(data);
+                 $.messager.alert('提示',data.msg);
+                if(data.status=='OK'){
+                      var tab = $('#tt').tabs('getSelected');
+                      tab.panel('refresh');
+                }
+            }
+        });
+    }
+    function closeForm(){
+       var tab= $('#tt').tabs('getSelected');
+        $('#tt').tabs('close', '权限分配');
+    }
+</script>

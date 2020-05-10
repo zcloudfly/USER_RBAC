@@ -1,0 +1,40 @@
+<form id="roleForm" method="post" >
+    <table>
+         <tr>
+             <td><label>角色编号：</label></td>
+             <td><input  class="easyui-validatebox" data-options="required:true" type="text" name="roleId" value="{{ role.roleId}}"></td>
+         </tr>
+         <tr>
+            <td><label>角色名称：</label></td>
+            <td><input class="easyui-validatebox" data-options="required:true" type="text" name="roleName" value="{{ role.roleName}}"></td>
+        </tr>
+        <tr>
+            <td><label>角色描述：</label></td>
+            <td><input class="easyui-validatebox" data-options="required:true" type="text" name="roleDescribe" value="{{ role.roleDescribe}}"></td>
+        </tr>
+
+    </table>
+</form>
+<script>
+
+//保存
+    function saveRole(title) {
+        var url;
+        if(title=='添加角色'){
+            url="../saveRole";
+        }else if(title=='编辑角色'){
+            url="../updateRole";
+        }
+         $('#roleForm').form('submit',{
+            url:url,
+            success:function(data){
+                data=JSON.parse(data);
+                 $.messager.alert('提示',data.msg);
+                if(data.status=='OK'){
+                     $('#roledialog').dialog('close');
+                     $('#roleList').datagrid('reload')
+                }
+            }
+        });
+    }
+</script>

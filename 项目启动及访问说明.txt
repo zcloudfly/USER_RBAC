@@ -1,0 +1,5 @@
+数据库链接配置：所在文件..\920869693@qq.com_ZhangYunfei_02\BJTU_RBAC\BJTU_RBAC\orm
+                配置host='localhost', port=3306, db='rbac', user='root', passwd='123456', charset='utf8'
+python版本：3.5
+引的重要的包：django系相关的包，sqlalchemy相关的包
+启动后默认访问路径：http://127.0.0.1:8000/rbac/

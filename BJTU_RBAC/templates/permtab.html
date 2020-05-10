@@ -1,0 +1,119 @@
+<table id="permList" >
+</table>
+<div id="ppp" ></div>
+<div id="ptb" style="">
+    <a onclick="tosavePerm()" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true">添加</a>
+    <a onclick="toeditPerm()" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true">编辑</a>
+    <a onclick="deletePerm();" class="easyui-linkbutton" data-options="iconCls:'icon-cut',plain:true">删除</a>
+</div>
+<div id="permdialog"></div>
+<script>
+        PAGESIZE=5;//默认每页显示
+        getPerm(1,PAGESIZE,null);
+       function getPerm(curPage,pageSize,param) {
+        $.ajax({
+            url: "../getPermList?curPage="+curPage+"&pageSize="+pageSize,
+            type: 'GET',
+            data: param ,
+            dataType: 'json',
+            success: function (ret) {
+                var totalSize = ret.totalSize;
+                var curPage = ret.curPage;
+                var data = eval(ret.data);
+                $('#permList').datagrid({
+                    data: data,
+                    toolbar: '#ptb',
+                    width:798,
+                    fitColumns:true,
+                    singleSelect:true,
+                    checkOnSelect:true,
+                    columns:[[
+                        {field:'ck',checkbox:true},
+                        {field:'pId',title:'PID',width:100},
+                        {field:'pCode',title:'编号',width:100},
+                        {field:'pName',title:'权限名',width:100},
+                        {field:'parentId',title:'父权限号'}
+                        ]]
+                });
+                 //分页
+                 $('#ppp').pagination({
+                     total:totalSize,
+                     pageSize:PAGESIZE,
+                     pageNumber:curPage,
+                     pageList: [PAGESIZE],
+                     onSelectPage:function(pageNumber, pageSize) {
+                          getPerm(pageNumber, pageSize,param);
+                      }
+                 });
+
+            }
+        });
+    }
+    
+
+     //添加
+    function tosavePerm() {
+        showDialog('../savePermPage','添加权限')
+    }
+    //编辑
+    function toeditPerm() {
+       var row=$('#permList').datagrid('getSelected');
+        if(row){
+             var pId=row.pId;
+            showDialog('../savePermPage?pId='+pId,'编辑权限')
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+
+     //删除
+    function deletePerm(){
+         var row=$('#permList').datagrid('getSelected');
+         if(row){
+             $.messager.confirm('确认','您确认想要删除记录吗？',function(r){
+                if (r){
+                     id=row.pId;
+                     $.ajax({
+                         url:'../deletePermById',
+                         type:'GET',
+                         data:{'id':id},
+                         dataType:'json',
+                         success: function(ret){
+                             if(ret.status=='OK'){
+                                  $.messager.alert('提醒',ret.msg);
+                                  getPerm(1,PAGESIZE,null);
+                                  //$('#permList').datagrid('reload')
+                             }else{
+                                 $.messager.alert('提醒','删除失败');
+                             }
+                         }
+                     });
+                     }
+             });
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+    function showDialog(url,title) {
+         $('#permdialog').dialog({
+        title: title,
+        width: 400,
+        height: 200,
+        closed: false,
+        cache: false,
+        href: url,//'../toEditCategory?id='+id,
+        modal: true,
+        buttons:[{
+				text:'保存',
+				handler:function(){
+                    savePerm(title);
+                }
+			},{
+				text:'关闭',
+				handler:function(){
+				    $('#permdialog').dialog('close');
+                }
+			}]
+    });
+    }
+</script>    

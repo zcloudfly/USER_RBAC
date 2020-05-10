@@ -1,0 +1,130 @@
+<table id="roleList" >
+</table>
+<div id="ppr" ></div>
+<div id="rtb" style="">
+    <a onclick="tosaverole()" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true">添加</a>
+    <a onclick="toeditRole()" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true">编辑</a>
+    <a onclick="deleteRole();" class="easyui-linkbutton" data-options="iconCls:'icon-cut',plain:true">删除</a>
+    <a onclick="setPerm();" class="easyui-linkbutton" data-options="iconCls:'icon-man',plain:true">权限分配</a>
+
+</div>
+<div id="roledialog"></div>
+<script>
+
+        PAGESIZE=5;//默认每页显示
+        getrole(1,PAGESIZE,null);
+       function getrole(curPage,pageSize,param) {
+        $.ajax({
+            url: "../getRoleList?curPage="+curPage+"&pageSize="+pageSize,
+            type: 'GET',
+            data: param ,
+            dataType: 'json',
+            success: function (ret) {
+                var totalSize = ret.totalSize;
+                var curPage = ret.curPage;
+                var data = eval(ret.data);
+                $('#roleList').datagrid({
+                    data: data,
+                    toolbar: '#rtb',
+                    width:798,
+                    fitColumns:true,
+                    singleSelect:true,
+                    checkOnSelect:true,
+                    columns:[[
+                        {field:'ck',checkbox:true},
+                        {field:'roleId',title:'角色编号',width:100},
+                        {field:'roleName',title:'角色名称'},
+                        {field:'roleDescribe',title:'描述'}
+                        ]]
+                });
+                 //分页
+                 $('#ppr').pagination({
+                     total:totalSize,
+                     pageSize:PAGESIZE,
+                     pageNumber:curPage,
+                     pageList: [PAGESIZE],
+                     onSelectPage:function(pageNumber, pageSize) {
+                          getrole(pageNumber, pageSize,param);
+                      }
+                 });
+
+            }
+        });
+    }
+    
+
+     //添加
+    function tosaverole() {
+        showDialog('../saveRolePage','添加角色')
+    }
+    //编辑
+    function toeditRole() {
+       var row=$('#roleList').datagrid('getSelected');
+        if(row){
+             var roleId=row.roleId;
+            showDialog('../saveRolePage?roleId='+roleId,'编辑角色')
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+
+     //删除
+    function deleteRole(){
+         var row=$('#roleList').datagrid('getSelected');
+         if(row){
+             $.messager.confirm('确认','您确认想要删除记录吗？',function(r){
+                if (r){
+                     id=row.roleId;
+                     $.ajax({
+                         url:'../deleteRoleById',
+                         type:'GET',
+                         data:{'id':id},
+                         dataType:'json',
+                         success: function(ret){
+                             if(ret.status=='OK'){
+                                  $.messager.alert('提醒',ret.msg);
+                                  $('#roleList').datagrid('reload')
+                             }else{
+                                 $.messager.alert('提醒','删除失败');
+                             }
+                         }
+                     });
+                     }
+             });
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+    function showDialog(url,title) {
+         $('#roledialog').dialog({
+        title: title,
+        width: 400,
+        height: 200,
+        closed: false,
+        cache: false,
+        href: url,//'../toEditCategory?id='+id,
+        modal: true,
+        buttons:[{
+				text:'保存',
+				handler:function(){
+                    saveRole(title);
+                }
+			},{
+				text:'关闭',
+				handler:function(){
+				    $('#roledialog').dialog('close');
+                }
+			}]
+    });
+    }
+    //权限分配
+    function setPerm() {
+        var row=$('#roleList').datagrid('getSelected');
+        if(row){
+             id=row.roleId;
+             openNewTab('权限分配','setRole','../toSetPermPage?id='+id);
+        }else{
+            $.messager.alert('提醒','请选择一行！');
+        }
+    }
+</script>    
